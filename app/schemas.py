@@ -1,5 +1,6 @@
 from app import ma
-from marshmallow import fields, validate
+from .models import User
+from marshmallow import fields, validate, ValidationError, validates
 
 class TodoSchema(ma.Schema):
     class Meta:
@@ -14,7 +15,17 @@ class ClientSchema(ma.Schema):
     scope = fields.String(required=True)
     token_endpoint_auth_method = fields.String()
 
+class UserRegisterSchema(ma.Schema):
+    username = fields.String(required=True, validate=validate.Length(min=6, max=20))
+    password = fields.String(required=True, validate=validate.Length(min=8, max=20))
+
+    @validates("username")
+    def is_user_exist(self, value):
+        user = User.query.filter(User.username==value).first()
+        if (user):
+            raise ValidationError("Username is taken!")
+
 todo_schema = TodoSchema()
 todos_schema = TodoSchema(many=True)
-
 client_schema = ClientSchema()
+user_register_schema = UserRegisterSchema()

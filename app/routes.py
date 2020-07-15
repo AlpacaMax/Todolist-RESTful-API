@@ -7,7 +7,7 @@ from werkzeug.security import gen_salt
 from authlib.integrations.flask_oauth2 import current_token
 from .models import User, OAuth2Client
 from .oauth2 import authorization, require_oauth
-from .schemas import client_schema
+from .schemas import client_schema, user_register_schema
 from marshmallow import ValidationError
 
 @app.route("/")
@@ -48,7 +48,7 @@ def create_client():
         client_id_issued_at=client_id_isssued_at,
         user_id=current_user.id
     )
-    
+
     client.set_client_metadata(client_metadata)
 
     if (client_metadata['token_endpoint_auth_method'] is None):
@@ -76,3 +76,23 @@ def issue_token():
 @app.route('/oauth/revoke', methods=['POST'])
 def revoke_token():
     return authorization.create_endpoint_response('revocation')
+
+# Register a user
+@app.route('/user', methods=['POST'])
+def register_user():
+    try:
+        data = user_register_schema.load(request.get_json())
+    except ValidationError as err:
+        return jsonify(err.messages), 400
+    
+    user = User(
+        username = data["username"],
+        password = bcrypt.generate_password_hash(data["password"]).decode("utf-8")
+    )
+
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify({
+        "Info": "User created!"
+    }), 201
