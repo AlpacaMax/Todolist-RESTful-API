@@ -33,7 +33,7 @@ def logout():
     logout_user()
     return jsonify({"Info":"Logged out!"})
 
-@app.route("/create_client", methods=["GET", "POST"])
+@app.route("/client", methods=["POST"])
 @login_required
 def create_client():
     try:
@@ -62,16 +62,22 @@ def create_client():
     return jsonify({
         "Client Info": client.client_info,
         "Client Metadata": client.client_metadata
-    })
+    }), 201
 
+    # AlpacaMax
     # client_id: NCQSMZYbcp9BvTr8bzQHgShJ
     # client_secret: Z6FOCqGKccyMctcaJv6NMDBFLNuTJuhKM5pK1YYfOoOjYpNH
+
+    # Gilbert
+    # client_id: D08Nqtgmyf9Ki4o02lECii4W
+    # client_secret: bFwERKDQ4OIjR2TM0EDd8obRH6Gh4fCRG8hx8BgSVSdwPts4
 
 @app.route("/oauth/token", methods=["POST"])
 def issue_token():
     return authorization.create_token_response()
 
     # Token for AlpacaMax: uwFxtOUc1zLWaRch8rT60gDhHqphHSRU557FbHwbOP
+    # Token for Gilbert: 40ACoq15Wt5iA2MndxPGul30KIvuwx0F30qKAnXtqx
 
 @app.route('/oauth/revoke', methods=['POST'])
 def revoke_token():
@@ -96,3 +102,22 @@ def register_user():
     return jsonify({
         "Info": "User created!"
     }), 201
+
+# Delete a user
+@app.route('/user/<int:user_id>', methods=['DELETE'])
+@require_oauth('profile')
+def delete_user(user_id):
+    token_user = current_token.user
+    target_user = User.query.get(user_id)
+
+    if (target_user is None):
+        return jsonify({"error":"User not found!"}), 404
+    elif (token_user is target_user):
+        if (current_user is target_user):
+            logout()
+
+        db.session.delete(target_user)
+        db.session.commit()
+        return jsonify({"info":"User deleted!"})
+    else:
+        return jsonify({"error":"Unauthorized user!"}), 401
