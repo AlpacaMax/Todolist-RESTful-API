@@ -7,7 +7,7 @@ from werkzeug.security import gen_salt
 from authlib.integrations.flask_oauth2 import current_token
 from .models import User, OAuth2Client
 from .oauth2 import authorization, require_oauth
-from .schemas import client_schema, user_register_schema
+from .schemas import client_schema, user_register_schema, user_schema
 from marshmallow import ValidationError
 
 @app.route("/coffee", methods=["POST"])
@@ -108,7 +108,7 @@ def register_user():
     }), 201
 
 # Delete a user
-@app.route('/user/<int:user_id>', methods=['DELETE'])
+@app.route('/user/<int:user_id>', methods=["DELETE"])
 @require_oauth('profile')
 def delete_user(user_id):
     token_user = current_token.user
@@ -123,5 +123,44 @@ def delete_user(user_id):
         db.session.delete(target_user)
         db.session.commit()
         return jsonify({"info":"User deleted!"})
+    else:
+        return jsonify({"error":"Unauthorized user!"}), 401
+
+# Get user info
+@app.route("/user/<int:user_id>", methods=["GET"])
+@require_oauth('profile')
+def view_user(user_id):
+    token_user = current_token.user
+    target_user = User.query.get(user_id)
+
+    if (target_user is None):
+        return jsonify({"error":"User not found!"}), 404
+    elif (token_user is target_user):
+        result = user_schema.dump(target_user)
+        return jsonify(result)
+    else:
+        return jsonify({"error":"Unauthorized user!"}), 401
+
+# Update user info
+@app.route("/user/<int:user_id>", methods=["PUT"])
+@require_oauth('profile')
+def update_user(user_id):
+    token_user = current_token.user
+    target_user = User.query.get(user_id)
+
+    if (target_user is None):
+        return jsonify({"error":"User not found!"}), 404
+    elif (token_user is target_user):
+        data = request.get_json()
+
+        if ("username" in data):
+            target_user.username = data["username"]
+        if ("password" in data):
+            target_user.password = bcrypt.generate_password_hash(data["password"]).decode("utf-8")
+        
+        db.session.add(target_user)
+        db.session.commit()
+
+        return jsonify({"info":"User info updated"})
     else:
         return jsonify({"error":"Unauthorized user!"}), 401

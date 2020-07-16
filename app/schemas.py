@@ -6,6 +6,11 @@ class TodoSchema(ma.Schema):
     class Meta:
         fields = ('id', 'user_id', 'name', 'year', 'month', 'week', 'day', 'finished')
 
+class UserSchema(ma.Schema):
+    id = fields.Integer()
+    username = fields.String()
+    todos = fields.List(fields.Nested(TodoSchema))
+
 class ClientSchema(ma.Schema):
     client_name = fields.String(required=True)
     client_uri = fields.String(required=True)
@@ -29,3 +34,4 @@ todo_schema = TodoSchema()
 todos_schema = TodoSchema(many=True)
 client_schema = ClientSchema()
 user_register_schema = UserRegisterSchema()
+user_schema = UserSchema()
