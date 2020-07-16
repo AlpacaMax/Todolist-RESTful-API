@@ -10,6 +10,10 @@ from .oauth2 import authorization, require_oauth
 from .schemas import client_schema, user_register_schema
 from marshmallow import ValidationError
 
+@app.route("/coffee", methods=["POST"])
+def brew_coffee_in_teapot():
+    return jsonify({"error":"I'm a teapot!"}), 418
+
 @app.route("/")
 def home():
     return jsonify({"Info":"Hello world!"})
