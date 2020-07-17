@@ -188,3 +188,17 @@ def create_todo():
     db.session.commit()
 
     return jsonify({"info":"Todo created!"}), 201
+
+# Get a todo info
+@app.route("/todo/<int:todo_id>", methods=["GET"])
+@require_oauth('profile')
+def view_todo(todo_id):
+    todo = Todo.query.get(todo_id)
+
+    if (todo is None):
+        return jsonify({"error":"Todo not found"}), 404
+    elif (todo.user_id != current_token.user_id):
+        return jsonify({"error":"Unauthorized User"}), 401
+    else:
+        result = todo_schema.dump(todo)
+        return jsonify(result)
