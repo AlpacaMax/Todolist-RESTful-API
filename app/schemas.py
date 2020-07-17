@@ -2,14 +2,20 @@ from app import ma
 from .models import User
 from marshmallow import fields, validate, ValidationError, validates
 
-class TodoSchema(ma.Schema):
-    class Meta:
-        fields = ('id', 'user_id', 'name', 'year', 'month', 'week', 'day', 'finished')
-
 class UserSchema(ma.Schema):
     id = fields.Integer()
     username = fields.String()
-    todos = fields.List(fields.Nested(TodoSchema))
+    todos = fields.List(fields.Nested(lambda: TodoSchema(exclude=("user",))))
+
+class TodoSchema(ma.Schema):
+    id = fields.Integer()
+    user = fields.Nested(UserSchema(exclude=("todos",)), dump_only=True)
+    name = fields.String(required=True)
+    year = fields.Integer()
+    month = fields.Integer(validate=validate.Range(min=1, max=12))
+    week = fields.Integer(validate=validate.Range(min=1, max=5))
+    day = fields.Integer(validate=validate.Range(min=1, max=31))
+    finished = fields.Bool(default=False)
 
 class ClientSchema(ma.Schema):
     client_name = fields.String(required=True)

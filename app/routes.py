@@ -7,7 +7,7 @@ from werkzeug.security import gen_salt
 from authlib.integrations.flask_oauth2 import current_token
 from .models import User, OAuth2Client
 from .oauth2 import authorization, require_oauth
-from .schemas import client_schema, user_register_schema, user_schema
+from .schemas import client_schema, user_register_schema, user_schema, todo_schema
 from marshmallow import ValidationError
 
 @app.route("/coffee", methods=["POST"])
@@ -164,3 +164,27 @@ def update_user(user_id):
         return jsonify({"info":"User info updated"})
     else:
         return jsonify({"error":"Unauthorized user!"}), 401
+
+# Create a Todo
+@app.route("/todo", methods=["POST"])
+@require_oauth('profile')
+def create_todo():
+    try:
+        data = todo_schema.load(request.get_json())
+    except ValidationError as err:
+        return jsonify(err.messages), 400
+
+    user = current_token.user
+
+    todo = Todo(
+        user_id = user.id,
+        name = data["name"],
+        year = data["year"],
+        month = data["month"],
+        week = data["week"],
+        day = data["day"]
+    )
+    db.session.add(todo)
+    db.session.commit()
+
+    return jsonify({"info":"Todo created!"}), 201
