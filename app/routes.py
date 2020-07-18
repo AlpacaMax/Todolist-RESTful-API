@@ -235,3 +235,19 @@ def update_todo(todo_id):
         db.session.commit()
 
         return jsonify({"info":"Todo Updated!"})
+
+# Delete a todo
+@app.route("/todo/<int:todo_id>", methods=["DELETE"])
+@require_oauth('profile')
+def delete_todo(todo_id):
+    todo = Todo.query.get(todo_id)
+
+    if (todo is None):
+        return jsonify({"error":"Todo not found"}), 404
+    elif (todo.user_id != current_token.user_id):
+        return jsonify({"error":"Unauthorized User"}), 401
+    else:
+        db.session.delete(todo)
+        db.session.commit()
+
+        return jsonify({"info":"Todo Deleted!"})
