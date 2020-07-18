@@ -203,13 +203,22 @@ def view_todo(todo_id):
         result = todo_schema.dump(todo)
         return jsonify(result)
 
-# Get all todos of a single user
+# Get all todos of a single user with certain conditions satisfied
 @app.route("/todo", methods=["GET"])
 @require_oauth('profile')
 def view_all_todos():
     user_id = current_token.user_id
-    todos = Todo.query.filter(Todo.user_id==user_id).all()
-    return jsonify(todos_schema.dump(todos))
+    todos = Todo.query.filter(Todo.user_id==user_id)
+
+    data = request.get_json()
+    if (data is not None):
+        if ("year" in data): todos = todos.filter(Todo.year==data["year"])
+        if ("month" in data): todos = todos.filter(Todo.month==data["month"])
+        if ("week" in data): todos = todos.filter(Todo.week==data["week"])
+        if ("day" in data): todos = todos.filter(Todo.day==data["day"])
+        if ("finished" in data): todos = todos.filter(Todo.finished==data["finished"])
+
+    return jsonify(todos_schema.dump(todos.all()))
 
 # Update a todo info
 @app.route("/todo/<int:todo_id>", methods=["PUT"])

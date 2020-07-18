@@ -11,11 +11,11 @@ class TodoSchema(ma.Schema):
     id = fields.Integer(load_only=True)
     user = fields.Nested(UserSchema(exclude=("todos",)), dump_only=True)
     name = fields.String(required=True)
-    year = fields.Integer(required=True)
-    month = fields.Integer(required=True, validate=validate.Range(min=1, max=12))
-    week = fields.Integer(required=True, validate=validate.Range(min=1, max=5))
-    day = fields.Integer(required=True, validate=validate.Range(min=1, max=31))
-    finished = fields.Bool(required=True, default=False)
+    year = fields.Integer(required=True, allow_none=True)
+    month = fields.Integer(required=True, validate=validate.Range(min=1, max=12), allow_none=True)
+    week = fields.Integer(required=True, alovalidate=validate.Range(min=1, max=5), allow_none=True)
+    day = fields.Integer(required=True, validate=validate.Range(min=1, max=31), allow_none=True)
+    finished = fields.Bool(required=True, default=False, allow_none=True)
 
 class ClientSchema(ma.Schema):
     client_name = fields.String(required=True)
