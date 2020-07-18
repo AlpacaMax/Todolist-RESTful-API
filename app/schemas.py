@@ -8,14 +8,14 @@ class UserSchema(ma.Schema):
     todos = fields.List(fields.Nested(lambda: TodoSchema(exclude=("user",))))
 
 class TodoSchema(ma.Schema):
-    id = fields.Integer()
+    id = fields.Integer(load_only=True)
     user = fields.Nested(UserSchema(exclude=("todos",)), dump_only=True)
     name = fields.String(required=True)
-    year = fields.Integer()
-    month = fields.Integer(validate=validate.Range(min=1, max=12))
-    week = fields.Integer(validate=validate.Range(min=1, max=5))
-    day = fields.Integer(validate=validate.Range(min=1, max=31))
-    finished = fields.Bool(default=False)
+    year = fields.Integer(required=True)
+    month = fields.Integer(required=True, validate=validate.Range(min=1, max=12))
+    week = fields.Integer(required=True, validate=validate.Range(min=1, max=5))
+    day = fields.Integer(required=True, validate=validate.Range(min=1, max=31))
+    finished = fields.Bool(required=True, default=False)
 
 class ClientSchema(ma.Schema):
     client_name = fields.String(required=True)

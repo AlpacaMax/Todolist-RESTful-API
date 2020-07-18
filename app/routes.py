@@ -215,4 +215,23 @@ def view_all_todos():
 @app.route("/todo/<int:todo_id>", methods=["PUT"])
 @require_oauth('profile')
 def update_todo(todo_id):
-    pass
+    todo = Todo.query.get(todo_id)
+
+    if (todo is None):
+        return jsonify({"error":"Todo not found"}), 404
+    elif (todo.user_id != current_token.user_id):
+        return jsonify({"error":"Unauthorized User"}), 401
+    else:
+        data = todo_schema.load(request.get_json())
+
+        todo.name = data["name"]
+        todo.year = data["year"]
+        todo.month = data["month"]
+        todo.week = data["week"]
+        todo.day = data["day"]
+        todo.finished = data["finished"]
+
+        db.session.add(todo)
+        db.session.commit()
+
+        return jsonify({"info":"Todo Updated!"})
