@@ -7,7 +7,7 @@ from werkzeug.security import gen_salt
 from authlib.integrations.flask_oauth2 import current_token
 from .models import User, OAuth2Client
 from .oauth2 import authorization, require_oauth
-from .schemas import client_schema, user_register_schema, user_schema, todo_schema
+from .schemas import client_schema, user_register_schema, user_schema, todo_schema, todos_schema
 from marshmallow import ValidationError
 
 @app.route("/coffee", methods=["POST"])
@@ -202,3 +202,17 @@ def view_todo(todo_id):
     else:
         result = todo_schema.dump(todo)
         return jsonify(result)
+
+# Get all todos of a single user
+@app.route("/todo", methods=["GET"])
+@require_oauth('profile')
+def view_all_todos():
+    user_id = current_token.user_id
+    todos = Todo.query.filter(Todo.user_id==user_id).all()
+    return jsonify(todos_schema.dump(todos))
+
+# Update a todo info
+@app.route("/todo/<int:todo_id>", methods=["PUT"])
+@require_oauth('profile')
+def update_todo(todo_id):
+    pass
