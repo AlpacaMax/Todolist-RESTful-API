@@ -239,6 +239,7 @@ def update_todo(todo_id):
         todo.week = data["week"]
         todo.day = data["day"]
         todo.finished = data["finished"]
+        todo.num_delayed = data["num_delayed"]
 
         db.session.add(todo)
         db.session.commit()

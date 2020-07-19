@@ -41,6 +41,7 @@ class Todo(db.Model):
     week = db.Column(db.Integer)
     day = db.Column(db.Integer)
     finished = db.Column(db.Boolean, default=False)
+    num_delayed = db.Column(db.Integer, default=0)
 
     def __repr__(self):
         return f"Todo({self.id}, '{self.name}', {self.user})"

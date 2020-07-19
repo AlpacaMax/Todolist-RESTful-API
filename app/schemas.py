@@ -16,6 +16,7 @@ class TodoSchema(ma.Schema):
     week = fields.Integer(required=True, alovalidate=validate.Range(min=1, max=5), allow_none=True)
     day = fields.Integer(required=True, validate=validate.Range(min=1, max=31), allow_none=True)
     finished = fields.Bool(required=True, default=False, allow_none=True)
+    num_delayed = fields.Integer(required=True, default=0, allow_none=True)
 
 class ClientSchema(ma.Schema):
     client_name = fields.String(required=True)
